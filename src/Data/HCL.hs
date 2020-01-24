@@ -62,6 +62,7 @@ import           Text.Megaparsec.Char       (alphaNumChar, anyChar, char, eol,
                                              spaceChar, tab)
 import qualified Text.Megaparsec.Char       as Megaparsec (string)
 import qualified Text.Megaparsec.Char.Lexer as Lexer
+import           Text.Megaparsec.Expr       (Operator(..), makeExprParser)
 
 import           Data.HCL.Types
 
@@ -92,6 +93,41 @@ topValue :: Parser HCLStatement
 topValue = label "HCL - topValue" $
     HCLStatementObject <$> try object
     <|> HCLStatementAssignment <$> assignment
+
+{-
+expr :: Parser HCLExpr
+expr = makeExprParser term table
+
+term = expr <|> HCLValue <$> value
+
+table :: [[Operator _ HCLExpr]]
+table = [ [ prefix "!"  HCLNot,      prefix "-"  HCLNegate                                        ]
+        , [ binary "*"  HCLMultiply, binary "/"  HCLDivide,  binary "%" HCLModulus                ]
+        , [ binary "+"  HCLAdd,      binary "-"  HCLSubtract                                      ]
+        , [ binary ">"  HCLGt,       binary ">=" HCLGte,     binary "<" HCLLt, binary "<=" HCLLte ]
+        , [ binary "==" HCLEq,       binary "!=" HCLNeq                                           ]
+        , [ binary "&&" HCLAnd                                                                    ]
+        , [ binary "||" HCLOr                                                                     ] ]
+
+binary name f = InfixL (f <$ Lexer.symbol name)
+prefix name f = Prefix (f <$ Lexer.symbol name)
+-}
+
+expr = makeExprParser term table
+
+term = expr <|> pure (42 :: Integer)
+
+table = [ [ prefix  "-"  negate
+          , prefix  "+"  id ] ]
+--        , [ postfix "++" (+1) ]
+--        , [ binary  "*"  (*)
+--          , binary  "/"  div  ]
+--        , [ binary  "+"  (+)
+--          , binary  "-"  (-)  ] ]
+
+binary  name f = InfixL  (f <$ Lexer.symbol name)
+prefix  name f = Prefix  (f <$ Lexer.symbol name)
+postfix name f = Postfix (f <$ Lexer.symbol name)
 
 value :: Parser HCLValue
 value = label "HCL - value" $

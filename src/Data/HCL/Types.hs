@@ -41,6 +41,24 @@ data HCLStatement = HCLStatementObject HCLValue
                   | HCLStatementAssignment ([Text], HCLValue)
   deriving(Generic, Show, Eq, NFData)
 
+data HCLExpr = HCLNot HCLExpr
+             | HCLNegate HCLExpr
+             | HCLMultiply HCLExpr HCLExpr
+             | HCLDivide HCLExpr HCLExpr
+             | HCLModulus HCLExpr HCLExpr
+             | HCLAdd HCLExpr HCLExpr
+             | HCLSubtract HCLExpr HCLExpr
+             | HCLGt HCLExpr HCLExpr
+             | HCLGte HCLExpr HCLExpr
+             | HCLLt HCLExpr HCLExpr
+             | HCLLte HCLExpr HCLExpr
+             | HCLEq HCLExpr HCLExpr
+             | HCLNeq HCLExpr HCLExpr
+             | HCLAnd HCLExpr HCLExpr
+             | HCLOr HCLExpr HCLExpr
+             | HCLValue HCLValue
+  deriving(Generic, Show, Eq, NFData)
+
 data HCLValue = HCLNumber Scientific
               | HCLString [HCLStringPart]
               | HCLIdent Text
